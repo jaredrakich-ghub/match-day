@@ -47,7 +47,7 @@ export function describeSaveError(err) {
 
 // --- Tournaments ------------------------------------------------------
 
-export async function createTournament({ name, date, pointsRules }) {
+export async function createTournament({ name, date, pointsRules, sport = "football", type = "other", teamNameSource = "custom" }) {
   const tournamentRef = doc(collection(db, TOURNAMENTS));
 
   // Generate a join code that isn't already taken. Collisions are very
@@ -73,6 +73,13 @@ export async function createTournament({ name, date, pointsRules }) {
     date: date || null,
     joinCode,
     createdAt: serverTimestamp(),
+    // sport is Football-only for now, but kept as an explicit field (not
+    // assumed) since the setup flow already asks for it and more sports are
+    // a plausible later addition. type/teamNameSource drive which list
+    // "Auto-add teams" pulls from in the setup wizard — see teamNames.js.
+    sport,
+    type,
+    teamNameSource,
     pointsRules: pointsRules || { win: 3, draw: 1, loss: 0 },
     poolConfig: null,
     status: "setup",
@@ -128,6 +135,21 @@ export async function addTeam(tournamentId, { name, color }) {
   const team = { name: name.trim(), color: color || null, poolId: null, players: [] };
   await setDoc(ref, team);
   return { id: ref.id, ...team };
+}
+
+// Creates several teams in one batch — used by "Auto-add teams" in the
+// setup wizard (a name per team, e.g. from countries.js/clubs.js) so N
+// teams show up together rather than as N separate round trips.
+export async function addTeamsBatch(tournamentId, names) {
+  const batch = writeBatch(db);
+  const created = names.map((name) => {
+    const ref = doc(teamsCollection(tournamentId));
+    const team = { name, color: null, poolId: null, players: [] };
+    batch.set(ref, team);
+    return { id: ref.id, ...team };
+  });
+  await batch.commit();
+  return created;
 }
 
 export async function updateTeam(tournamentId, teamId, updates) {

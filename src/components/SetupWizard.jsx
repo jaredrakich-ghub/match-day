@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { Plus, X, Shuffle, RotateCcw } from "lucide-react";
+import { Plus, X, Shuffle, RotateCcw, Sparkles } from "lucide-react";
 import {
   addTeam,
+  addTeamsBatch,
   deleteTeam,
   assignTeamsToPools,
   generatePoolStage,
@@ -11,11 +12,19 @@ import {
   updateTournament,
 } from "../lib/tournaments.js";
 import { assignPools, suggestNumPools } from "../lib/pools.js";
+import { pickRandomNames } from "../lib/teamNames.js";
+import { COUNTRIES } from "../lib/countries.js";
+import { CLUBS } from "../lib/clubs.js";
+
+const NAME_SOURCES = { countries: COUNTRIES, clubs: CLUBS };
+const NAME_SOURCE_LABEL = { countries: "countries", clubs: "clubs" };
 
 export default function SetupWizard() {
   const { tournament, teams, teamsById, poolMatches, knockoutMatches } = useOutletContext();
   const navigate = useNavigate();
   const [newTeamName, setNewTeamName] = useState("");
+  const [autoAddCount, setAutoAddCount] = useState(8);
+  const [autoAdding, setAutoAdding] = useState(false);
   const [numPools, setNumPools] = useState(1);
   const [advancePerPool, setAdvancePerPool] = useState(1);
   const [poolsPreview, setPoolsPreview] = useState([]);
@@ -57,6 +66,25 @@ export default function SetupWizard() {
     const name = newTeamName;
     setNewTeamName("");
     await addTeam(tournament.id, { name });
+  }
+
+  // "Auto-add teams" — instant convenience for World Cup/Champions League
+  // style tournaments, not a hard requirement: it just fills in N teams
+  // named from countries.js/clubs.js so the organizer isn't stuck typing
+  // "Team 1", "Team 2"... Any team can still be renamed afterward (Teams
+  // tab) if a kid wants a specific one.
+  const nameSourceList = NAME_SOURCES[tournament.teamNameSource];
+  async function handleAutoAdd() {
+    if (!nameSourceList || autoAddCount <= 0) return;
+    setAutoAdding(true);
+    try {
+      const existingNames = new Set(teams.map((t) => t.name));
+      const available = nameSourceList.filter((n) => !existingNames.has(n));
+      const names = pickRandomNames(available.length > 0 ? available : nameSourceList, autoAddCount);
+      await addTeamsBatch(tournament.id, names);
+    } finally {
+      setAutoAdding(false);
+    }
   }
 
   const maxAdvance = poolsPreview.length > 0 ? Math.min(...poolsPreview.map((p) => p.length)) : 1;
@@ -154,6 +182,26 @@ export default function SetupWizard() {
             <Plus size={18} />
           </button>
         </form>
+
+        {nameSourceList && (
+          <div className="row" style={{ paddingTop: 4, borderTop: "1px solid var(--border)" }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label htmlFor="autoAddCount">Number of teams to auto-add</label>
+              <input
+                id="autoAddCount"
+                type="number"
+                min="1"
+                className="input"
+                value={autoAddCount}
+                onChange={(e) => setAutoAddCount(Math.max(1, Number(e.target.value) || 1))}
+              />
+            </div>
+            <button className="btn btn-accent" style={{ marginTop: 20 }} onClick={handleAutoAdd} disabled={autoAdding} type="button">
+              <Sparkles size={16} />
+              {autoAdding ? "Adding…" : `Auto-add from ${NAME_SOURCE_LABEL[tournament.teamNameSource]}`}
+            </button>
+          </div>
+        )}
       </div>
 
       {teams.length >= 2 && (
