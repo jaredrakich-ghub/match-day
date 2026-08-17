@@ -9,6 +9,25 @@
     <meta name="description" content="Run a kids' football tournament day — pools, knockouts, scores, and a golden boot leaderboard." />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Match Day</title>
+    <script type="text/javascript">
+      // Un-does the redirect 404.html performs for a deep-link GitHub Pages
+      // otherwise can't serve (see comments there) — restores the real path
+      // via history.replaceState before React Router mounts, so e.g. a
+      // shared tournament link lands on that tournament, not the home
+      // screen. No-op on a normal load (query string won't start with "/").
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
   </head>
   <body>
     <div id="root"></div>

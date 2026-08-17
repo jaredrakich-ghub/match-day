@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Match Day</title>
+    <script type="text/javascript">
+      // GitHub Pages serves *this* file for any URL it doesn't recognize as
+      // a real static file — which, for a client-side-routed app, is every
+      // deep link (e.g. a shared tournament URL like /match-day/t/abc123).
+      // There's no server-side rewrite available on GitHub Pages, so this
+      // redirects back to the app's real entry point with the intended path
+      // packed into a query string, which index.html's matching script then
+      // unpacks via history.replaceState before React Router ever sees it.
+      // Standard, widely-used pattern: https://github.com/rafgraph/spa-github-pages
+      var pathSegmentsToKeep = 1; // keeps "/match-day" (the GitHub Pages project path) intact
+
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") +
+          "/?/" +
+          l.pathname.slice(1).split("/").slice(pathSegmentsToKeep).join("/").replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
