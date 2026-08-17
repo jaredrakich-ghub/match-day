@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import { useParams, Outlet, NavLink } from "react-router-dom";
 import { Settings, CalendarDays, ClipboardList, Layers, GitBranch, Award, Users, Share2 } from "lucide-react";
 import { useTournamentData } from "../hooks/useTournamentData.js";
@@ -36,26 +36,35 @@ export default function TournamentShell() {
   }
 
   return (
-    <div className="stack">
-      <div className="row-between">
-        <div>
-          <h1 style={{ fontSize: 20, margin: 0 }}>{tournament.name}</h1>
-          {tournament.date && <p className="text-soft text-sm" style={{ margin: 0 }}>{tournament.date}</p>}
+    // The tab bar is a sibling of .stack, not nested inside it — .stack
+    // gets the settle-in transform animation on route change (see
+    // index.css), and a `transform` on an ancestor makes it the containing
+    // block for any `position: fixed` descendant. Nesting the tab bar
+    // inside would silently turn "fixed to the viewport" into "fixed to
+    // this div", pinning it to the wrong place the instant that animation
+    // runs (found the hard way — see the design-pass verification).
+    <Fragment>
+      <div className="stack">
+        <div className="row-between">
+          <div>
+            <h1 style={{ fontSize: 20, margin: 0 }}>{tournament.name}</h1>
+            {tournament.date && <p className="text-soft text-sm" style={{ margin: 0 }}>{tournament.date}</p>}
+          </div>
+          <button
+            className="chip"
+            onClick={() => {
+              const url = `${window.location.origin}${import.meta.env.BASE_URL}t/${tournament.id}`;
+              navigator.clipboard?.writeText(url).catch(() => {});
+            }}
+            title="Copy a link to share with other devices"
+          >
+            <Share2 size={14} />
+            {tournament.joinCode}
+          </button>
         </div>
-        <button
-          className="chip"
-          onClick={() => {
-            const url = `${window.location.origin}${import.meta.env.BASE_URL}t/${tournament.id}`;
-            navigator.clipboard?.writeText(url).catch(() => {});
-          }}
-          title="Copy a link to share with other devices"
-        >
-          <Share2 size={14} />
-          {tournament.joinCode}
-        </button>
-      </div>
 
-      <Outlet context={data} />
+        <Outlet context={data} />
+      </div>
 
       <nav className="tab-bar">
         <div className="tab-bar-inner">
@@ -67,6 +76,6 @@ export default function TournamentShell() {
           ))}
         </div>
       </nav>
-    </div>
+    </Fragment>
   );
 }

@@ -1,7 +1,11 @@
 /* Match Day — shared design system. Plain CSS classes (not inline styles,
    not a framework) — this is a fresh app with many small screens, and named
    classes keep component files focused on structure/behavior. Mobile/tablet
-   first: touch-sized controls, single-column layouts that widen gracefully. */
+   first: touch-sized controls, single-column layouts that widen gracefully.
+
+   Design pass notes: rounder/softer shapes, colored shadows instead of flat
+   gray ones, small motion on tap/mount, a pulsing dot for "live" — the kind
+   of polish that reads as "current" without changing any layout structure. */
 
 :root {
   --navy: #14213d;
@@ -11,12 +15,23 @@
   --win: #1e8e5a;
   --loss: #c1502e;
   --draw: #8a7a4f;
-  --paper: #f6f7fb;
+  --paper: #f4f5fa;
   --card: #ffffff;
-  --border: #e1e4ec;
+  --border: #e5e8f0;
   --ink: #14213d;
-  --ink-soft: #5c657a;
-  --radius: 12px;
+  --ink-soft: #626b80;
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(20, 33, 61, 0.06), 0 1px 1px rgba(20, 33, 61, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(20, 33, 61, 0.18);
+  --shadow-navy: 0 6px 16px -4px rgba(20, 33, 61, 0.35);
+  --shadow-amber: 0 6px 16px -4px rgba(215, 138, 10, 0.4);
+
+  --ease: cubic-bezier(0.22, 0.9, 0.32, 1);
 }
 
 * {
@@ -29,6 +44,10 @@ body,
   margin: 0;
   padding: 0;
   min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -46,7 +65,10 @@ select {
 
 a {
   color: inherit;
+  text-decoration: none;
 }
+
+/* App shell ---------------------------------------------------- */
 
 .app-shell {
   min-height: 100vh;
@@ -57,8 +79,10 @@ a {
 .app-header {
   background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
   color: white;
-  padding: 14px 16px;
-  border-bottom: 3px solid var(--amber);
+  padding: 16px;
+  box-shadow: var(--shadow-navy);
+  position: relative;
+  z-index: 5;
 }
 
 .app-header-inner {
@@ -72,13 +96,17 @@ a {
 
 .app-title {
   font-weight: 900;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   font-size: 18px;
   text-decoration: none;
   color: white;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+}
+
+.app-title svg {
+  color: var(--amber);
 }
 
 .app-main {
@@ -86,8 +114,42 @@ a {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 16px;
-  padding-bottom: 84px; /* room for the fixed tab bar on tournament screens */
+  padding: 18px 16px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); /* room for the fixed tab bar on tournament screens */
+}
+
+/* Every top-level screen renders a single .stack — animating it here (once,
+   on mount) gives route changes a soft settle-in instead of an abrupt swap,
+   without needing a routing/animation library. Opacity only, deliberately
+   no transform: a `transform` on this element — even a fully-settled
+   translateY(0) — makes it the containing block for any `position: fixed`
+   descendant, which would silently break the tab bar the moment it's
+   nested under a .stack (as it briefly was — see TournamentShell.jsx). */
+.app-main > .stack {
+  animation: settle-in 280ms var(--ease) both;
+}
+
+@keyframes settle-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .app-main > .stack,
+  .match-card,
+  .btn,
+  .tab-link,
+  .badge-live::before {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Cards & layout ---------------------------------------------------- */
@@ -96,7 +158,8 @@ a {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  padding: 18px;
 }
 
 .stack {
@@ -119,18 +182,25 @@ a {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.8px;
   color: var(--ink-soft);
   margin: 0 0 8px;
+}
+
+h1 {
+  letter-spacing: -0.2px;
 }
 
 .empty-state {
   text-align: center;
   color: var(--ink-soft);
-  padding: 32px 16px;
+  padding: 40px 20px;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
 }
 
 /* Buttons & inputs ---------------------------------------------------- */
@@ -140,16 +210,26 @@ a {
   border: 1px solid var(--border);
   background: white;
   color: var(--ink);
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-weight: 700;
   font-size: 15px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px; /* touch target */
+  min-height: 46px; /* touch target */
+  transition: transform 150ms var(--ease), box-shadow 150ms var(--ease), filter 150ms var(--ease);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--navy-light);
+  outline-offset: 2px;
 }
 
 .btn:disabled {
@@ -158,15 +238,25 @@ a {
 }
 
 .btn-primary {
-  background: var(--navy);
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
   border-color: var(--navy);
   color: white;
+  box-shadow: var(--shadow-navy);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
 
 .btn-accent {
-  background: var(--amber);
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dark) 100%);
   border-color: var(--amber-dark);
   color: var(--navy);
+  box-shadow: var(--shadow-amber);
+}
+
+.btn-accent:hover:not(:disabled) {
+  filter: brightness(1.05);
 }
 
 .btn-danger {
@@ -180,27 +270,37 @@ a {
 }
 
 .btn-sm {
-  min-height: 36px;
-  padding: 6px 12px;
+  min-height: 38px;
+  padding: 6px 14px;
   font-size: 13px;
+  border-radius: var(--radius-sm);
 }
 
 .btn-icon {
-  min-height: 36px;
-  min-width: 36px;
+  min-height: 38px;
+  min-width: 38px;
   padding: 6px;
+  border-radius: var(--radius-full);
 }
 
 .input,
 .select {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
   font-size: 15px;
-  min-height: 44px;
+  min-height: 46px;
   background: white;
   color: var(--ink);
+  transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(31, 53, 96, 0.15);
 }
 
 .field {
@@ -211,7 +311,7 @@ a {
 
 .field label {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink-soft);
 }
 
@@ -223,9 +323,12 @@ a {
   left: 0;
   right: 0;
   display: flex;
-  background: white;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
-  box-shadow: 0 -2px 10px rgba(20, 33, 61, 0.06);
+  box-shadow: 0 -8px 24px -8px rgba(20, 33, 61, 0.12);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 10;
 }
 
@@ -243,12 +346,18 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 4px 10px;
+  gap: 3px;
+  padding: 9px 4px 8px;
   text-decoration: none;
   color: var(--ink-soft);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  transition: color 150ms var(--ease);
+  position: relative;
+}
+
+.tab-link svg {
+  transition: stroke 150ms var(--ease), transform 150ms var(--ease);
 }
 
 .tab-link.active {
@@ -257,6 +366,19 @@ a {
 
 .tab-link.active svg {
   stroke: var(--amber-dark);
+  transform: translateY(-1px);
+}
+
+/* Small dot under the active tab's icon rather than a background pill —
+   reads clearly at this size without crowding a 7-item bar. */
+.tab-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--amber-dark);
 }
 
 /* Tables (standings) ---------------------------------------------------- */
@@ -269,7 +391,7 @@ a {
 
 .table th,
 .table td {
-  padding: 8px 6px;
+  padding: 10px 6px;
   text-align: center;
   border-bottom: 1px solid var(--border);
 }
@@ -282,16 +404,22 @@ a {
 .table thead th {
   font-size: 11px;
   text-transform: uppercase;
+  letter-spacing: 0.4px;
   color: var(--ink-soft);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .table tbody tr:last-child td {
   border-bottom: none;
 }
 
+.table tbody tr:nth-child(odd) {
+  background: rgba(20, 33, 61, 0.02);
+}
+
 .table td.points {
   font-weight: 800;
+  color: var(--navy);
 }
 
 /* Match cards ---------------------------------------------------- */
@@ -303,9 +431,21 @@ a {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
   cursor: pointer;
   color: inherit;
+  transition: transform 150ms var(--ease), box-shadow 150ms var(--ease), border-color 150ms var(--ease);
+}
+
+.match-card:hover {
+  border-color: var(--navy-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.match-card:active {
+  transform: translateY(0) scale(0.99);
 }
 
 .match-card-teams {
@@ -319,7 +459,7 @@ a {
 .match-card-score {
   font-variant-numeric: tabular-nums;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 17px;
   color: var(--navy);
   white-space: nowrap;
 }
@@ -327,7 +467,7 @@ a {
 .match-card-meta {
   display: flex;
   justify-content: space-between;
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 12px;
   color: var(--ink-soft);
 }
@@ -335,10 +475,11 @@ a {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -348,8 +489,31 @@ a {
   color: var(--loss);
 }
 
+/* A quiet pulsing dot rather than an animated background — reads as "this
+   is currently happening" without being distracting in a list of cards. */
+.badge-live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--loss);
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.75);
+  }
+}
+
 .badge-final {
-  background: #e2ede6;
+  background: #dcefe3;
   color: var(--win);
 }
 
@@ -362,7 +526,7 @@ a {
 
 .bracket {
   display: flex;
-  gap: 20px;
+  gap: 22px;
   overflow-x: auto;
   padding-bottom: 12px;
 }
@@ -377,25 +541,33 @@ a {
 
 .bracket-round-title {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.4px;
   color: var(--ink-soft);
   text-align: center;
 }
 
 .bracket-match {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: white;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  transition: box-shadow 150ms var(--ease), transform 150ms var(--ease);
+}
+
+.bracket-match:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .bracket-slot {
   display: flex;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 9px 12px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .bracket-slot + .bracket-slot {
@@ -411,6 +583,24 @@ a {
   color: var(--ink-soft);
   font-weight: 500;
   font-style: italic;
+}
+
+/* Loading skeleton ---------------------------------------------------- */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, #eef0f6 37%, var(--border) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 /* Utility ---------------------------------------------------- */
@@ -440,8 +630,9 @@ a {
   align-items: center;
   gap: 6px;
   background: #eceef4;
-  border-radius: 999px;
-  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  padding: 7px 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  transition: background 150ms var(--ease);
 }
