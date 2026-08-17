@@ -1,0 +1,15 @@
+{
+  "name": "Match Day",
+  "short_name": "Match Day",
+  "description": "Run a kids' football tournament day — pools, knockouts, scores, and a golden boot leaderboard.",
+  "start_url": "/match-day/",
+  "scope": "/match-day/",
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#14213d",
+  "icons": [
+    { "src": "/match-day/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/match-day/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/match-day/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

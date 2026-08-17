@@ -1,0 +1,447 @@
+/* Match Day — shared design system. Plain CSS classes (not inline styles,
+   not a framework) — this is a fresh app with many small screens, and named
+   classes keep component files focused on structure/behavior. Mobile/tablet
+   first: touch-sized controls, single-column layouts that widen gracefully. */
+
+:root {
+  --navy: #14213d;
+  --navy-light: #1f3560;
+  --amber: #fca311;
+  --amber-dark: #d78a0a;
+  --win: #1e8e5a;
+  --loss: #c1502e;
+  --draw: #8a7a4f;
+  --paper: #f6f7fb;
+  --card: #ffffff;
+  --border: #e1e4ec;
+  --ink: #14213d;
+  --ink-soft: #5c657a;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: white;
+  padding: 14px 16px;
+  border-bottom: 3px solid var(--amber);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.app-title {
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  font-size: 18px;
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 84px; /* room for the fixed tab bar on tournament screens */
+}
+
+/* Cards & layout ---------------------------------------------------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 32px 16px;
+}
+
+/* Buttons & inputs ---------------------------------------------------- */
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px; /* touch target */
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+}
+
+.btn-accent {
+  background: var(--amber);
+  border-color: var(--amber-dark);
+  color: var(--navy);
+}
+
+.btn-danger {
+  background: white;
+  border-color: var(--loss);
+  color: var(--loss);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-icon {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 6px;
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  min-height: 44px;
+  background: white;
+  color: var(--ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* Tab bar ---------------------------------------------------- */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: white;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 10px rgba(20, 33, 61, 0.06);
+  z-index: 10;
+}
+
+.tab-bar-inner {
+  display: flex;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+.tab-link {
+  flex: 1;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 10px;
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tab-link.active {
+  color: var(--navy);
+}
+
+.tab-link.active svg {
+  stroke: var(--amber-dark);
+}
+
+/* Tables (standings) ---------------------------------------------------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.table thead th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table td.points {
+  font-weight: 800;
+}
+
+/* Match cards ---------------------------------------------------- */
+
+.match-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.match-card-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.match-card-score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.match-card-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-live {
+  background: #fde2d5;
+  color: var(--loss);
+}
+
+.badge-final {
+  background: #e2ede6;
+  color: var(--win);
+}
+
+.badge-scheduled {
+  background: #eceef4;
+  color: var(--ink-soft);
+}
+
+/* Bracket ---------------------------------------------------- */
+
+.bracket {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 16px;
+  min-width: 190px;
+}
+
+.bracket-round-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.bracket-match {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  overflow: hidden;
+}
+
+.bracket-slot {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.bracket-slot + .bracket-slot {
+  border-top: 1px solid var(--border);
+}
+
+.bracket-slot.winner {
+  background: #fff7e8;
+  color: var(--navy);
+}
+
+.bracket-slot.tbd {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Utility ---------------------------------------------------- */
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-soft {
+  color: var(--ink-soft);
+}
+
+.text-sm {
+  font-size: 13px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eceef4;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}

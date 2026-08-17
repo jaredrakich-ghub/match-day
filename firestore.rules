@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Shape checks, not content checks — these exist to reject a completely
+    // malformed write (a client bug), not to enforce every detail of what's
+    // inside a tournament/team/match. Fields like `poolConfig` or `goals`
+    // keep evolving as the app grows, so this deliberately only checks that
+    // the required top-level fields exist and are the right *kind* of thing.
+    function isValidTournament(data) {
+      return data.keys().hasAll(['name', 'joinCode', 'pointsRules', 'status'])
+        && data.name is string
+        && data.joinCode is string
+        && data.pointsRules is map
+        && data.status is string;
+    }
+
+    function isValidTeam(data) {
+      return data.keys().hasAll(['name', 'players'])
+        && data.name is string
+        && data.players is list;
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['stage', 'status'])
+        && data.stage is string
+        && data.status is string;
+    }
+
+    // Join-code -> tournament id lookup. Only ever accessed by exact,
+    // already-known code (a `get`) — never listed — so `allow get` being
+    // open to any signed-in (anonymous is fine) device doesn't let anyone
+    // enumerate every tournament's code. `list` is explicitly denied.
+    match /joinCodes/{code} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.keys().hasAll(['tournamentId']);
+      allow update, delete: if false;
+    }
+
+    // Same reasoning: a tournament (and everything under it) is only ever
+    // fetched by an id the caller already has — from a joinCodes lookup, or
+    // remembered locally after creating/joining it — never by listing the
+    // whole `tournaments` collection. That's what makes "anyone signed in
+    // can read/write a tournament they know the id for" an acceptable
+    // access model for a one-day event shared by join code/link, rather
+    // than a way for a stranger to browse other people's tournaments.
+    match /tournaments/{tournamentId} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if isSignedIn() && isValidTournament(request.resource.data);
+      allow update: if isSignedIn() && isValidTournament(request.resource.data);
+      allow delete: if isSignedIn();
+
+      match /teams/{teamId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isValidTeam(request.resource.data);
+      }
+
+      match /matches/{matchId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && isValidMatch(request.resource.data);
+      }
+    }
+  }
+}
