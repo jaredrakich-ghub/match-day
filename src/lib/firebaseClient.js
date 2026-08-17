@@ -28,12 +28,12 @@ const isEmulator = import.meta.env.VITE_USE_EMULATOR === "true";
 const firebaseConfig = isEmulator
   ? { apiKey: "demo-key", authDomain: "localhost", projectId: "demo-match-day-test" }
   : {
-      apiKey: "REPLACE_ME",
-      authDomain: "REPLACE_ME.firebaseapp.com",
-      projectId: "REPLACE_ME",
-      storageBucket: "REPLACE_ME.firebasestorage.app",
-      messagingSenderId: "REPLACE_ME",
-      appId: "REPLACE_ME",
+      apiKey: "AIzaSyBmGRf_WwEbESfYWYuSE7jA90XiSZYpqIU",
+      authDomain: "match-day-48806.firebaseapp.com",
+      projectId: "match-day-48806",
+      storageBucket: "match-day-48806.firebasestorage.app",
+      messagingSenderId: "460225732885",
+      appId: "1:460225732885:web:b4bf4f75893042a1fb491c",
     };
 
 const app = initializeApp(firebaseConfig);
